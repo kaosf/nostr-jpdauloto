@@ -42,6 +42,9 @@ sub.on("event", (event) => {
     return;
   }
 
-  const stdout = execSync(`node publish.js ${replyId} ${prediction}`);
-  console.log(stdout.toString());
+  try {
+    execSync(`node publish.js ${replyId} ${prediction}`);
+  } catch {
+    // Do nothing
+  } // TODO: Fix more essentially.
 });
