@@ -1,4 +1,4 @@
-import { SimplePool } from "nostr-tools";
+import { SimplePool, finishEvent, nip19 } from "nostr-tools";
 import "websocket-polyfill";
 import { readFileSync } from "fs";
 import { execSync } from "child_process";
@@ -7,8 +7,9 @@ const relays = readFileSync("./relays.txt", "utf-8")
   .split("\n")
   .filter((x) => !x.match(/^#/))
   .filter((x) => !(x === ""));
+const privKey = nip19.decode(readFileSync("./nsec.txt", "utf-8").trim()).data;
 
-const kojiraPubkey =
+const kojiraPubKey =
   "b3e43e8cc7e6dff23a33d9213a3e912d895b1c3e4250240e0c99dbefe3068b5f";
 
 const now = Math.floor(Date.now() / 1000);
@@ -18,7 +19,7 @@ const pool = new SimplePool();
 const sub = pool.sub(relays, [
   {
     kinds: [1],
-    authors: [kojiraPubkey],
+    authors: [kojiraPubKey],
     since: now - 1 * 60 * 60,
     "#t": "nostrquiz",
   },
@@ -33,7 +34,7 @@ const predictDau = () => {
   return ret;
 };
 
-sub.on("event", (event) => {
+sub.on("event", async (event) => {
   console.log(event);
   const replyId = event.id;
   const prediction = predictDau();
@@ -42,9 +43,21 @@ sub.on("event", (event) => {
     return;
   }
 
-  try {
-    execSync(`node publish.js ${replyId} ${prediction}`);
-  } catch {
-    // Do nothing
-  } // TODO: Fix more essentially.
+  console.log(`Prediction: ${prediction}`);
+  const content = `${prediction}`;
+  const ev = finishEvent(
+    {
+      kind: 1,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [
+        ["e", replyId, "", "root"],
+        ["p", kojiraPubKey],
+      ],
+      content,
+    },
+    privKey
+  );
+  console.log(new Date(), "Before publish allSettled");
+  await Promise.allSettled(pool.publish(relays, ev));
+  console.log(new Date(), "After publish allSettled");
 });
