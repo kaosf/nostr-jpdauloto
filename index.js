@@ -21,7 +21,7 @@ const sub = pool.sub(relays, [
     kinds: [1],
     authors: [kojiraPubKey],
     since: now - 1 * 60 * 60,
-    "#t": "nostrquiz",
+    "#t": ["nostrquiz", "nostrqquiz"],
   },
 ]);
 
