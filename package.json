@@ -15,6 +15,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "luxon": "^3.4.2",
     "nostr-tools": "^1.14.2",
     "websocket-polyfill": "^0.0.3"
   }
