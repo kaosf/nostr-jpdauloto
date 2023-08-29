@@ -1,7 +1,7 @@
 import { SimplePool, finishEvent, nip19 } from "nostr-tools";
 import "websocket-polyfill";
 import { readFileSync } from "fs";
-import { execSync } from "child_process";
+import { DateTime } from "luxon";
 
 const relays = readFileSync("./relays.txt", "utf-8")
   .split("\n")
@@ -21,7 +21,6 @@ const sub = pool.sub(relays, [
     kinds: [1],
     authors: [kojiraPubKey],
     since: now - 1 * 60 * 60,
-    "#t": ["nostrquiz", "nostrqquiz"],
   },
 ]);
 
@@ -34,7 +33,25 @@ const predictDau = () => {
   return ret;
 };
 
+const detectQuizPost = (event) => {
+  const hour = DateTime.fromSeconds(event.created_at).setZone(
+    "Asia/Tokyo"
+  ).hour;
+  if (hour !== 0) {
+    return false;
+  }
+
+  const content = event.content;
+  if (content.match(/第\d+回Nostrくいず/)) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 sub.on("event", async (event) => {
+  if (!detectQuizPost(event)) return;
+
   console.log(event);
   const replyId = event.id;
   const prediction = predictDau();
