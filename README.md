@@ -1,10 +1,10 @@
 # Nostrquiz (JP DAU Loto)
 
 ```sh
-nvim nsec.txt # Input nsec1...
-chmod 600 nsec.txt
+nvim config/nsec.txt # Input nsec1...
+chmod 600 config/nsec.txt
 
-nvim relays.txt # Input relay URLs
+nvim config/relays.txt # Input relay URLs
 # Example
 <<EOF
 wss://nostr.example.com
@@ -16,9 +16,11 @@ EOF
 ```
 
 ```sh
-asdf install
-npm i
-node index.js
+docker run -d \
+-v $PWD/config:/workspace/config \
+-v $PWD/data:/workspace/data \
+-u $UID \
+kaosf/nostr-jpdauloto:0.1.0
 ```
 
 ## License
