@@ -1,3 +1,4 @@
-/nsec.txt
-/prediction.txt
-/relays.txt
+/config/nsec.txt
+/config/relays.txt
+/data/answered-ids.txt
+/data/prediction.txt

@@ -1,13 +1,15 @@
 import { SimplePool, finishEvent, nip19 } from "nostr-tools";
 import "websocket-polyfill";
-import { readFileSync } from "fs";
+import { readFileSync, appendFileSync } from "fs";
 import { DateTime } from "luxon";
 
-const relays = readFileSync("./relays.txt", "utf-8")
+const relays = readFileSync("./config/relays.txt", "utf-8")
   .split("\n")
   .filter((x) => !x.match(/^#/))
   .filter((x) => !(x === ""));
-const privKey = nip19.decode(readFileSync("./nsec.txt", "utf-8").trim()).data;
+const privKey = nip19.decode(
+  readFileSync("./config/nsec.txt", "utf-8").trim()
+).data;
 
 const kojiraPubKey =
   "b3e43e8cc7e6dff23a33d9213a3e912d895b1c3e4250240e0c99dbefe3068b5f";
@@ -25,7 +27,7 @@ const sub = pool.sub(relays, [
 ]);
 
 const predictDau = () => {
-  const ret = parseInt(readFileSync("./prediction.txt", "utf-8").trim());
+  const ret = parseInt(readFileSync("./data/prediction.txt", "utf-8").trim());
   if (isNaN(ret)) {
     console.log("Error! parse result is NaN.");
     return -1;
@@ -49,18 +51,36 @@ const detectQuizPost = (event) => {
   }
 };
 
+const isAlreadyAnswered = (id) => {
+  const ids = readFileSync("./data/answered-ids.txt", "utf-8")
+    .split("\n")
+    .filter((x) => x === id);
+  return ids.length > 0;
+};
+
+const recordAnsweredId = (id) => {
+  appendFileSync("./data/answered-ids.txt", `${id}\n`);
+  console.log(new Date(), "Recorded event.id:", id);
+};
+
 sub.on("event", async (event) => {
   if (!detectQuizPost(event)) return;
+  console.log(new Date(), "Detected event.id:", event.id);
 
-  console.log(event);
-  const replyId = event.id;
-  const prediction = predictDau();
-  if (prediction < 0) {
-    console.log(`Error! prediction: ${prediction}`);
+  if (isAlreadyAnswered(event.id)) {
+    console.log(new Date(), `event.id: ${event.id} already answered.`);
     return;
   }
 
-  console.log(`Prediction: ${prediction}`);
+  const replyId = event.id;
+  const prediction = predictDau();
+  if (prediction < 0) {
+    console.error(new Date(), `Error! prediction: ${prediction}`);
+    recordAnsweredId(replyId);
+    return;
+  }
+
+  console.log(new Date(), "Prediction:", prediction);
   const content = `${prediction}`;
   const ev = finishEvent(
     {
@@ -74,6 +94,7 @@ sub.on("event", async (event) => {
     },
     privKey
   );
+  recordAnsweredId(replyId);
   console.log(new Date(), "Before publish allSettled");
   await Promise.allSettled(pool.publish(relays, ev));
   console.log(new Date(), "After publish allSettled");
