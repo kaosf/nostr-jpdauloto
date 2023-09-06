@@ -39,7 +39,7 @@ const detectQuizPost = (event) => {
   const hour = DateTime.fromSeconds(event.created_at).setZone(
     "Asia/Tokyo"
   ).hour;
-  if (hour !== 0) {
+  if (hour >= 4) {
     return false;
   }
 
