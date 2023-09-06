@@ -46,6 +46,14 @@ const detectQuizPost = (event) => {
   const content = event.content;
   if (content.match(/第\d+回Nostrくいず/)) {
     return true;
+  } else if (content.match(/Nostr日本語話者/)) {
+    return true;
+  } else if (content.match(/日本語話者のDAU/)) {
+    return true;
+  } else if (content.match(/何人でしょう/)) {
+    return true;
+  } else if (content.match(/従来の計測方法/)) {
+    return true;
   } else {
     return false;
   }
