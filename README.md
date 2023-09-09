@@ -20,7 +20,7 @@ docker run -d \
 -v $PWD/config:/workspace/config \
 -v $PWD/data:/workspace/data \
 -u $UID \
-kaosf/nostr-jpdauloto:0.1.0
+kaosf/nostr-jpdauloto:1.0.0
 ```
 
 ## License
