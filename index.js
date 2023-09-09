@@ -104,7 +104,20 @@ sub.on("event", async (event) => {
     privKey
   );
   recordAnsweredId(replyId);
-  console.log(new Date(), "Before publish allSettled");
-  await Promise.allSettled(pool.publish(relays, ev));
-  console.log(new Date(), "After publish allSettled");
+  console.log(new Date(), "Before race");
+  await Promise.race([
+    Promise.allSettled(pool.publish(relays, ev)).then(() => {
+      console.log(new Date(), "Done allSettled!");
+    }),
+    new Promise((resolve) => {
+      setTimeout(
+        () => {
+          console.log(new Date(), "Timeout!");
+          resolve();
+        },
+        1 * 60 * 60 * 1000
+      );
+    }),
+  ]);
+  console.log(new Date(), "After race");
 });
