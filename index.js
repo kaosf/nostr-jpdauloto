@@ -90,7 +90,10 @@ sub.on("event", async (event) => {
 
   console.log(new Date(), "Prediction:", prediction);
   const content = `${prediction}`;
-  const created_at = Math.max(Math.floor(Date.now() / 1000), event.created_at + 1);
+  const created_at = Math.max(
+    Math.floor(Date.now() / 1000),
+    event.created_at + 1
+  );
   const ev = finishEvent(
     {
       kind: 1,
