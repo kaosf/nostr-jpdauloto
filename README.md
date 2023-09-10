@@ -3,6 +3,8 @@
 Prepare config files.
 
 ```sh
+mkdir config
+
 nvim config/nsec.txt # Input nsec1...
 chmod 600 config/nsec.txt
 
@@ -20,6 +22,8 @@ EOF
 Prepare data files.
 
 ```sh
+mkdir data
+
 nvim data/prediction.txt # Input your prediction
 # Write only the number
 
@@ -48,7 +52,7 @@ docker run -d \
 -v $PWD/config:/workspace/config \
 -v $PWD/data:/workspace/data \
 -u $UID \
-kaosf/nostr-jpdauloto:1.0.0
+kaosf/nostr-jpdauloto:latest
 ```
 
 ## License
