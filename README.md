@@ -53,6 +53,9 @@ docker run -d \
 -v $PWD/data:/workspace/data \
 -u $UID \
 kaosf/nostr-jpdauloto:latest
+
+# or
+# docker run ... kaosf/nostr-jpdauloto:1.0.0
 ```
 
 ## License
