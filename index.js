@@ -118,7 +118,7 @@ sub.on("event", async (event) => {
           console.log(new Date(), "Timeout!");
           resolve();
         },
-        1 * 60 * 60 * 1000
+        10 * 60 * 1000
       );
     }),
   ]);
