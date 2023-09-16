@@ -4,7 +4,7 @@ import { readFileSync, appendFileSync } from "fs";
 import { DateTime } from "luxon";
 
 const relays = readFileSync("./config/relays.txt", "utf-8")
-  .split("\n")
+  .split(/\n|\r\n|\r/)
   .filter((x) => !x.match(/^#/))
   .filter((x) => !(x === ""));
 const privKey = nip19.decode(
