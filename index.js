@@ -43,6 +43,13 @@ const detectQuizPost = (event) => {
     return false;
   }
 
+  const tags = event.tags;
+  if (
+    tags.find((tag) => tag[0] === "t" && tag[1] === "nostrquiz") === undefined
+  ) {
+    return false;
+  }
+
   const content = event.content;
   if (content.match(/第\d+回Nostrくいず/)) {
     return true;
