@@ -7,12 +7,9 @@ const relays = readFileSync("./config/relays.txt", "utf-8")
   .split(/\n|\r\n|\r/)
   .filter((x) => !x.match(/^#/))
   .filter((x) => !(x === ""));
-const privKey = nip19.decode(
-  readFileSync("./config/nsec.txt", "utf-8").trim()
-).data;
+const privKey = nip19.decode(readFileSync("./config/nsec.txt", "utf-8").trim()).data;
 
-const kojiraPubKey =
-  "b3e43e8cc7e6dff23a33d9213a3e912d895b1c3e4250240e0c99dbefe3068b5f";
+const kojiraPubKey = "b3e43e8cc7e6dff23a33d9213a3e912d895b1c3e4250240e0c99dbefe3068b5f";
 
 const now = Math.floor(Date.now() / 1000);
 
@@ -36,9 +33,7 @@ const predictDau = () => {
 };
 
 const detectQuizPost = (event) => {
-  const hour = DateTime.fromSeconds(event.created_at).setZone(
-    "Asia/Tokyo"
-  ).hour;
+  const hour = DateTime.fromSeconds(event.created_at).setZone("Asia/Tokyo").hour;
   if (hour >= 4) {
     return false;
   }
@@ -93,12 +88,7 @@ sub.on("event", async (event) => {
     return;
   }
   if (isAlreadyAnsweredToday(now)) {
-    console.log(
-      new Date(),
-      `now.toFormat("yyyy-MM-dd"): ${now.toFormat(
-        "yyyy-MM-dd"
-      )} already answered.`
-    );
+    console.log(new Date(), `now.toFormat("yyyy-MM-dd"): ${now.toFormat("yyyy-MM-dd")} already answered.`);
     return;
   }
 
@@ -112,10 +102,7 @@ sub.on("event", async (event) => {
 
   console.log(new Date(), "Prediction:", prediction);
   const content = `${prediction}`;
-  const created_at = Math.max(
-    Math.floor(Date.now() / 1000),
-    event.created_at + 1
-  );
+  const created_at = Math.max(Math.floor(Date.now() / 1000), event.created_at + 1);
   const ev = finishEvent(
     {
       kind: 1,
@@ -126,7 +113,7 @@ sub.on("event", async (event) => {
       ],
       content,
     },
-    privKey
+    privKey,
   );
   recordAnsweredId(replyId);
   recordLatestAnsweredDate(now);
@@ -141,7 +128,7 @@ sub.on("event", async (event) => {
           console.log(new Date(), "Timeout!");
           resolve();
         },
-        10 * 60 * 1000
+        10 * 60 * 1000,
       );
     }),
   ]);
