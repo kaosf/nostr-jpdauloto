@@ -33,9 +33,12 @@ cat data/prediction.txt
 
 touch data/answered-ids.txt
 # Quiz event ids are recorded automatically.
+touch data/latest-answered-date.txt
+# The latest reacted date is recorded automatically. (required from version 2)
 
-# You can edit it manually.
+# You can edit them manually.
 nvim data/answered-ids.txt
+nvim data/latest-answered-date.txt
 
 # e.g.
 cat data/answered-ids.txt
@@ -43,6 +46,9 @@ cat data/answered-ids.txt
 # 8bfc1950c8c9ba3f8c2ea9a9247bb1d1dc7efe332ee2237cc9d8c742618e7b63
 # 73fcbfca4e3ec76e204808df639330ad2b484e98ad097456f8481c9c58fbc602
 # 08e06175beee7304e0f4a6624c1efd2fe680e20bf33e985764bdd67958d5c503
+cat data/latest-answered-date.txt
+#=>
+# 2023-09-23
 ```
 
 Run a container.

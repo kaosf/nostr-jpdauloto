@@ -1,4 +1,5 @@
 /config/nsec.txt
 /config/relays.txt
 /data/answered-ids.txt
+/data/latest-answered-date.txt
 /data/prediction.txt

@@ -1,6 +1,6 @@
 import { SimplePool, finishEvent, nip19 } from "nostr-tools";
 import "websocket-polyfill";
-import { readFileSync, appendFileSync } from "fs";
+import { readFileSync, writeFileSync, appendFileSync } from "fs";
 import { DateTime } from "luxon";
 
 const relays = readFileSync("./config/relays.txt", "utf-8")
@@ -66,17 +66,39 @@ const isAlreadyAnswered = (id) => {
   return ids.length > 0;
 };
 
+const isAlreadyAnsweredToday = (now) => {
+  const s = readFileSync("./data/latest-answered-date.txt", "utf-8").trim();
+  const latestAnsweredDate = DateTime.fromFormat(s, "yyyy-MM-dd");
+  return now.startOf("day") <= latestAnsweredDate.startOf("day");
+};
+
 const recordAnsweredId = (id) => {
   appendFileSync("./data/answered-ids.txt", `${id}\n`);
   console.log(new Date(), "Recorded event.id:", id);
 };
 
+const recordLatestAnsweredDate = (now) => {
+  const date = now.toFormat("yyyy-MM-dd");
+  writeFileSync("./data/latest-answered-date.txt", `${date}\n`);
+  console.log(new Date(), "Recorded latest answered date:", date);
+};
+
 sub.on("event", async (event) => {
   if (!detectQuizPost(event)) return;
   console.log(new Date(), "Detected event.id:", event.id);
+  const now = DateTime.now().setZone("Asia/Tokyo");
 
   if (isAlreadyAnswered(event.id)) {
     console.log(new Date(), `event.id: ${event.id} already answered.`);
+    return;
+  }
+  if (isAlreadyAnsweredToday(now)) {
+    console.log(
+      new Date(),
+      `now.toFormat("yyyy-MM-dd"): ${now.toFormat(
+        "yyyy-MM-dd"
+      )} already answered.`
+    );
     return;
   }
 
@@ -107,6 +129,7 @@ sub.on("event", async (event) => {
     privKey
   );
   recordAnsweredId(replyId);
+  recordLatestAnsweredDate(now);
   console.log(new Date(), "Before race");
   await Promise.race([
     Promise.allSettled(pool.publish(relays, ev)).then(() => {
