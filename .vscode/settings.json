@@ -1,0 +1,10 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // "prettier.prettierPath": "./node_modules/prettier",
+  "prettier.prettierPath": "./node_modules/prettier/index.cjs", // workaround
+  // ref.
+  //   https://github.com/prettier/prettier-vscode/issues/3059
+  //   https://github.com/prettier/prettier-vscode/issues/3100
+  "cSpell.ignoreRegExpList": ["kojira", "luxon", "nostr", "nsec"],
+}
+
