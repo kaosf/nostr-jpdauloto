@@ -1,4 +1,4 @@
-import { SimplePool, finishEvent, nip19 } from "nostr-tools";
+import { Event, SimplePool, finishEvent, nip19 } from "nostr-tools";
 import "websocket-polyfill";
 import { readFileSync, writeFileSync, appendFileSync } from "fs";
 import { DateTime } from "luxon";
@@ -7,7 +7,7 @@ const relays = readFileSync("./config/relays.txt", "utf-8")
   .split(/\n|\r\n|\r/)
   .filter((x) => !x.match(/^#/))
   .filter((x) => !(x === ""));
-const privKey = nip19.decode(readFileSync("./config/nsec.txt", "utf-8").trim()).data;
+const privKey = nip19.decode(readFileSync("./config/nsec.txt", "utf-8").trim()).data as string;
 
 const kojiraPubKey = "b3e43e8cc7e6dff23a33d9213a3e912d895b1c3e4250240e0c99dbefe3068b5f";
 
@@ -32,7 +32,7 @@ const predictDau = () => {
   return ret;
 };
 
-const detectQuizPost = (event) => {
+const detectQuizPost = (event: Event) => {
   const hour = DateTime.fromSeconds(event.created_at).setZone("Asia/Tokyo").hour;
   if (hour >= 4) {
     return false;
@@ -54,25 +54,25 @@ const detectQuizPost = (event) => {
   }
 };
 
-const isAlreadyAnswered = (id) => {
+const isAlreadyAnswered = (id: string) => {
   const ids = readFileSync("./data/answered-ids.txt", "utf-8")
     .split("\n")
     .filter((x) => x === id);
   return ids.length > 0;
 };
 
-const isAlreadyAnsweredToday = (now) => {
+const isAlreadyAnsweredToday = (now: DateTime) => {
   const s = readFileSync("./data/latest-answered-date.txt", "utf-8").trim();
   const latestAnsweredDate = DateTime.fromFormat(s, "yyyy-MM-dd");
   return now.startOf("day") <= latestAnsweredDate.startOf("day");
 };
 
-const recordAnsweredId = (id) => {
+const recordAnsweredId = (id: string) => {
   appendFileSync("./data/answered-ids.txt", `${id}\n`);
   console.log(new Date(), "Recorded event.id:", id);
 };
 
-const recordLatestAnsweredDate = (now) => {
+const recordLatestAnsweredDate = (now: DateTime) => {
   const date = now.toFormat("yyyy-MM-dd");
   writeFileSync("./data/latest-answered-date.txt", `${date}\n`);
   console.log(new Date(), "Recorded latest answered date:", date);
@@ -126,7 +126,7 @@ sub.on("event", async (event) => {
       setTimeout(
         () => {
           console.log(new Date(), "Timeout!");
-          resolve();
+          resolve(null);
         },
         10 * 60 * 1000,
       );
