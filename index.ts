@@ -23,8 +23,33 @@ const sub = pool.sub(relays, [
   },
 ]);
 
-const predictDau = () => {
-  const ret = parseInt(readFileSync("./data/prediction.txt", "utf-8").trim());
+type QuizType = "jadau" | "endau" | "frdau" | "dedau" | "kodau" | "??dau";
+type IsNotQuiz = undefined;
+const isNotQuiz: IsNotQuiz = undefined;
+type DetectionResult = IsNotQuiz | QuizType;
+
+const predictDau = (quizType: QuizType) => {
+  let filepath = "";
+  switch (quizType) {
+    case "jadau":
+      filepath = "./data/prediction.txt";
+      break;
+    case "endau":
+      filepath = "./data/prediction-en.txt";
+      break;
+    case "frdau":
+      return Math.floor(100 + Math.random() * 50); // 😇
+    case "dedau":
+      return Math.floor(150 + Math.random() * 80); // 😇
+    case "kodau":
+      return Math.floor(80 + Math.random() * 50); // 😇
+    case "??dau":
+      return Math.floor(Math.random() * 300); // 😇
+    default:
+      console.log(new Date(), "Something went wrong in predictDau. Invalid QuizType; quizType:", quizType);
+      return -1;
+  }
+  const ret = parseInt(readFileSync(filepath, "utf-8").trim());
   if (isNaN(ret)) {
     console.log("Error! parse result is NaN.");
     return -1;
@@ -32,25 +57,31 @@ const predictDau = () => {
   return ret;
 };
 
-const detectQuizPost = (event: Event) => {
+const detectQuizPost = (event: Event): DetectionResult => {
   const hour = DateTime.fromSeconds(event.created_at).setZone("Asia/Tokyo").hour;
   if (hour >= 4) {
-    return false;
+    return isNotQuiz;
   }
 
   const content = event.content;
-  if (content.match(/第\d+回Nostrくいず/)) {
-    return true;
-  } else if (content.match(/Nostr日本語話者/)) {
-    return true;
-  } else if (content.match(/日本語話者のDAU/)) {
-    return true;
-  } else if (content.match(/何人でしょう/)) {
-    return true;
-  } else if (content.match(/従来の計測方法/)) {
-    return true;
+  if (content.match(/ピタリ/) && content.match(/ニアピン/) && content.match(/何人/) && content.match(/まで受付/)) {
+    if (content.match(/Nostr日本語話者/)) {
+      return "jadau";
+    } else if (content.match(/Nostr英語話者/)) {
+      return "endau";
+    } else if (content.match(/Nostrフランス語話者/)) {
+      return "frdau";
+    } else if (content.match(/Nostrドイツ語話者/)) {
+      return "dedau";
+    } else if (content.match(/Nostr韓国語話者/)) {
+      return "kodau";
+    } else if (content.match(/Nostr.{1,50}語話者/)) {
+      return "??dau";
+    } else {
+      return isNotQuiz;
+    }
   } else {
-    return false;
+    return isNotQuiz;
   }
 };
 
@@ -79,9 +110,14 @@ const recordLatestAnsweredDate = (now: DateTime) => {
 };
 
 sub.on("event", async (event) => {
-  if (!detectQuizPost(event)) return;
+  const detectionResult = detectQuizPost(event);
+  switch (detectionResult) {
+    case isNotQuiz:
+      return;
+  }
   console.log(new Date(), "Detected event.id:", event.id);
   const now = DateTime.now().setZone("Asia/Tokyo");
+  const quizType: QuizType = detectionResult;
 
   if (isAlreadyAnswered(event.id)) {
     console.log(new Date(), `event.id: ${event.id} already answered.`);
@@ -93,7 +129,7 @@ sub.on("event", async (event) => {
   }
 
   const replyId = event.id;
-  const prediction = predictDau();
+  const prediction = predictDau(quizType);
   if (prediction < 0) {
     console.error(new Date(), `Error! prediction: ${prediction}`);
     recordAnsweredId(replyId);
