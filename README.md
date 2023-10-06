@@ -25,11 +25,14 @@ Prepare data files.
 mkdir data
 
 nvim data/prediction.txt # Input your prediction
+nvim data/prediction-en.txt # Input your prediction
 # Write only the number
 
 # e.g.
 cat data/prediction.txt
 #=> 123
+cat data/prediction-en.txt
+#=> 1234
 
 touch data/answered-ids.txt
 # Quiz event ids are recorded automatically.
