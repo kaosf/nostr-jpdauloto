@@ -23,38 +23,61 @@ const sub = pool.sub(relays, [
   },
 ]);
 
-type QuizType = "jadau" | "endau" | "frdau" | "dedau" | "kodau" | "??dau";
+type SpanType = "dau" | "wau" | "mau" | "aau";
+type LanguageType = "ja" | "en" | "fr" | "de" | "ko" | "??";
+type QuizType = { language: LanguageType; span: SpanType };
 type IsNotQuiz = undefined;
 const isNotQuiz: IsNotQuiz = undefined;
 type DetectionResult = IsNotQuiz | QuizType;
 
+const getPredictionFromFile = (filepath: string): number => {
+  const s = readFileSync(filepath, "utf-8").trim();
+  const ret = parseInt(s);
+  if (isNaN(ret)) {
+    console.log("Error! parse result is NaN.", "filepath:", filepath, "file content:", s);
+    return -1;
+  }
+  return ret;
+};
+
 const predictDau = (quizType: QuizType) => {
   let filepath = "";
-  switch (quizType) {
-    case "jadau":
-      filepath = "./data/prediction.txt";
+  switch (quizType.language) {
+    case "ja":
+      switch (quizType.span) {
+        case "dau":
+          filepath = "./data/prediction.txt";
+          break;
+        case "wau":
+          filepath = "./data/prediction-ja-wau.txt";
+          break;
+        case "mau":
+          filepath = "./data/prediction-ja-mau.txt";
+          break;
+        case "aau":
+          filepath = "./data/prediction-ja-aau.txt";
+          break;
+        default:
+          console.log(new Date(), "Something went wrong in predictDau. Invalid QuizType.language; quizType:", quizType);
+          return -1;
+      }
       break;
-    case "endau":
+    case "en":
       filepath = "./data/prediction-en.txt";
       break;
-    case "frdau":
+    case "fr":
       return Math.floor(100 + Math.random() * 50); // 😇
-    case "dedau":
+    case "de":
       return Math.floor(150 + Math.random() * 80); // 😇
-    case "kodau":
+    case "ko":
       return Math.floor(80 + Math.random() * 50); // 😇
-    case "??dau":
+    case "??":
       return Math.floor(Math.random() * 300); // 😇
     default:
       console.log(new Date(), "Something went wrong in predictDau. Invalid QuizType; quizType:", quizType);
       return -1;
   }
-  const ret = parseInt(readFileSync(filepath, "utf-8").trim());
-  if (isNaN(ret)) {
-    console.log("Error! parse result is NaN.");
-    return -1;
-  }
-  return ret;
+  return getPredictionFromFile(filepath);
 };
 
 const detectQuizPost = (event: Event): DetectionResult => {
@@ -64,25 +87,38 @@ const detectQuizPost = (event: Event): DetectionResult => {
   }
 
   const content = event.content;
+  const ret: DetectionResult = { span: "dau", language: "ja" };
   if (content.match(/ピタリ/) && content.match(/ニアピン/) && content.match(/何人/) && content.match(/まで受付/)) {
     if (content.match(/Nostr日本語話者/)) {
-      return "jadau";
+      ret.language = "ja";
     } else if (content.match(/Nostr英語話者/)) {
-      return "endau";
+      ret.language = "en";
     } else if (content.match(/Nostrフランス語話者/)) {
-      return "frdau";
+      ret.language = "fr";
     } else if (content.match(/Nostrドイツ語話者/)) {
-      return "dedau";
+      ret.language = "de";
     } else if (content.match(/Nostr韓国語話者/)) {
-      return "kodau";
+      ret.language = "ko";
     } else if (content.match(/Nostr.{1,50}語話者/)) {
-      return "??dau";
+      ret.language = "??";
+    } else {
+      return isNotQuiz;
+    }
+    if (content.match(/DAU/)) {
+      ret.span = "dau";
+    } else if (content.match(/WAU/)) {
+      ret.span = "wau";
+    } else if (content.match(/MAU/)) {
+      ret.span = "mau";
+    } else if (content.match(/AAU/)) {
+      ret.span = "aau";
     } else {
       return isNotQuiz;
     }
   } else {
     return isNotQuiz;
   }
+  return ret;
 };
 
 const isAlreadyAnswered = (id: string) => {
